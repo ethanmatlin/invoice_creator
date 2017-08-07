@@ -1,0 +1,38 @@
+\documentclass{article} \begin{document} \section{BILLING MEMORANDUM}
+\subsection{SageCoach Requests}
+\textbf{Invoice #: %(invoice)} \\
+\textbf{Date:} %(curren0tDate) \\
+\textbf{To:} %(name) \\
+\textbf{From:} Brenda Schmit, Ethan Matlin \\
+\textbf{Re:} SageCoach Billing \\ \\
+\textbf{ Trip Summaries} \\
+\begin{tabular}{cccc}
+    Date & Miles & Time (hours) & Destination & Trip Charges (total at bottom) \\
+%(data_body)
+    & & & & $%(totalcharge)
+\end{tabular}
+\textbf{Note: SageCoach trips are billed according to the following:} \begin{enumerate}
+    \item "47 Things" Trip-$1.50 per mile
+    \item General Student Trip-$1.50 per mile + $15 per hour
+    \item Non-student related trips \begin{enumerate}
+        \item Around Claremont-$40 per hour
+        \item Outside of Claremont-$30 per hour + $1.50 per mile
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{This can be paid on of two ways:} \begin{enumerate}
+\item If the group that has reserved the trip has a Pomona account with the business office, complete the Expense Transfer Form attached to this email. \begin{itemize}
+\item If the transfer is not internal (ie from a club, organization, ASPC), please list destination account number as: FD100  CC05022  R0202
+\item If the transfer is internal (ie from a Pomona College Department), please list destination account number as: FD100  CC05022  R0247
+\end{itemize}
+\item You may also write a check to the Pomona College Business Office and send it to Brenda Schmit, Smith Campus Center, Suite 244 </li>
+\end{enumerate}
+
+If there are any questions, please feel free to contact Brenda Schmit by phone at campus ext. 18984 or by email at bls04747@pomona.edu \\
+\textbf{NOTE:} If you received this invoice for a trip that you requested or participated in, but you are not responsible for billing, please forward this not the appropriate entity. \\
+
+Thank you, \\
+
+Ethan Matlin \\
+
+Student Vehicle Manager
