@@ -1,8 +1,12 @@
 import csv
 import time
+import os
 import argparse
 import pandas as pd
 import numpy as np
+from string import Template
+import subprocess
+import json
 
 def getCharge(miles, hours, things47, student):
     if student==1:
@@ -40,6 +44,7 @@ def nameExists(dictionary,k):
 
 
 def main():
+   # path =
     date = time.strftime("%c")
     totalCharge = 0.0
     nameHTML = ""
@@ -52,67 +57,68 @@ def main():
     data_arr = (df.as_matrix()).tolist()
     print(data_arr)
 
-    dictionary = {}
+    dict = {}
     #valueArr = [[0 for x in range(1)] for y in range(data_arr.shape[1])]
     #print(valueArr)
     #valueArr = [[]]
 
     for i in range(0, len(data_arr)):
-        entry = data_arr[i][0:3] + data_arr[i][4:9]
-        if data_arr[i][3] in dictionary.keys():
-            dictionary[data_arr[i][3]] = dictionary[data_arr[i][3]] + [entry]
+        #entry = data_arr[i][0:3] + data_arr[i][4:9]
+        miles = [round(data_arr[i][1]-data_arr[i][0],2)]
+        hours = [round(data_arr[i][2],2)]
+        tripCharge = [getCharge(miles[0],hours[0],data_arr[i][8], data_arr[i][7])]
+        description = [data_arr[i][5]]
+        tripDate = [data_arr[i][6]]
+        if data_arr[i][3] in dict.keys():
+            dict[data_arr[i][3]] = {'miles': dict[data_arr[i][3]]['miles'] + miles,
+                                    'hours': dict[data_arr[i][3]]['hours'] + hours,
+                                    'tripCharge': dict[data_arr[i][3]]['tripCharge'] + tripCharge,
+                                    'description': dict[data_arr[i][3]]['description'] + description,
+                                    'tripDate': dict[data_arr[i][3]]['tripDate'] + tripDate
+            }
+           # dict[data_arr[i][3]] + [entry]
         else:
-            dictionary[data_arr[i][3]] = [entry]
+            dict[data_arr[i][3]] = {'miles': miles,
+                                    'hours': hours,
+                                    'tripCharge': tripCharge,
+                                    'description': description,
+                                    'tripDate': tripDate
+            }
 
-    print(dictionary)
-    print("a")
-    for key in dictionary.keys():
-        print(key)
-        print(dictionary[key])
-        print("a")
-        print(dictionary[key][len(dictionary[key])-1][0])
-        miles = [dictionary[key][j][1]-dictionary[key][j][0] for j in range(0,len(dictionary[key]))]
-        hours = [dictionary[key][j][2] for j in range(0,len(dictionary[key]))]
-        print(miles)
-        print(hours)
-        print(miles[len(dictionary[key])-1])
-        print(len(dictionary[key][0]))
-        tripCharge =[getCharge(miles[j],hours[j],dictionary[key][j][7],dictionary[key][j][6]) for j in range(0,len(dictionary[key])-1)]
-        description = [dictionary[key][j][4] for j in range(0,len(dictionary[key])-1)]
-        tripDate = [dictionary[key][j][5] for j in range(0,len(dictionary[key])-1)]
-
-    print(dictionary)
-
-    with open("template.txt","r") as f:
-        tex_template = f.read().replace('\n','')
-
-    for key in dictionary.keys():
-        print(key)
-        parser = argparse.ArgumentParser()
-        parser.add_argument(invoice, '--invoice')
-        parser.add_argument(date, '--currentDate')
-        parser.add_argument(key, '--name')
+    print(dict)
 
 
-        parser.add_argument(passin, '--data_body')
-        parser.add_argument(passin, '--totalcharge')
-    args = parser.parse_args()
+    for key in dict.keys():
+        total_charge=0
+        data_body = ""
+        print(dict[key]['miles'])
+        for i in range(len(dict[key]['miles'])):
+            total_charge = total_charge + dict[key]['tripCharge'][i]
+            data_body = data_body + dict[key]['tripDate'][i].replace("/","\//") + "&" + str(dict[key]['miles'][i]) + "&" + str(dict[key]['hours'][i]) + "&" + dict[key]['description'][i] + "&" +  str(dict[key]['tripCharge'][i]) + "\\\ "
+        print(data_body)
+        template_file = open('template.txt')
+        tex = Template(template_file.read().replace('\n',''))
+        template_file.close()
+        subs = {'invoice': invoice,
+                'currentDate': date,
+                'name': key,
+                'data_body': data_body,
+                'totalcharge': total_charge
+        }
+        tex = tex.substitute(subs)
 
-    cmd = ['pdflatex', filenamehere]
-    with open(filenamehere, 'w') as f:
-        f.write(content%args.__dict__)
-    proc = subprocss.Popen()
-    proc.communicate()
+        filename = key.replace(' ', '')  + str(invoice)
 
-    retcode = proc.returncode
-    if not retcode==0:
-        os.unlink(filenamehere)
-        raise ValueError('Error {} executing command: {}:'.format(retcode,' '.join(cmd)))
-    os.unlink(filename.tex)
-    os.unlink(filname.log)
-    #%(date0) & %(miles0) & %(hours0) & %(dest0) & %(charge0) \\
-#    %(date0) & %(miles1) & %(hours1) & %(dest1) & %(charge1) \\
- #   %(date0) & %(miles2) & %(hours2) & %(dest2) & %(charge2) \\
-  #  %(date0) & %(miles3) & %(hours3) & %(dest3) & %(charge3) \\
+        os.chdir('../')
+        cmd = "pdflatex -interaction nonstopmode " + filename +'.tex'
+        with open(filename+'.tex', 'w') as f:
+            f.write(tex)
+            f.close()
 
+        os.system(cmd)
+
+        os.unlink(filename + ".tex")
+        os.unlink(filename + ".log")
+        os.unlink(filename + ".aux")
+        os.chdir('script')
 main()
